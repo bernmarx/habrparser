@@ -2,10 +2,9 @@ package main
 
 import (
 	"database/sql"
-	"log"
-
 	"github.com/bernmarx/habrparser/internal/pkg/page"
 	"github.com/bernmarx/habrparser/internal/pkg/scraper"
+	"log"
 
 	_ "github.com/lib/pq"
 )
@@ -13,6 +12,7 @@ import (
 const (
 	dailyURL = "https://habr.com/ru/top/daily/"
 	maxPages = 10
+	workers  = 8
 )
 
 func worker(jobs <-chan string, results chan<- page.Page) {
@@ -44,9 +44,11 @@ func main() {
 
 	log.Println(parsedLinks)
 
-	//парсинг статей и их отправление
-	for i := 0; i < maxPages; i++ {
+	for i := 0; i < workers; i++ {
 		go worker(jobs, results)
+	}
+
+	for i := 0; i < maxPages; i++ {
 		jobs <- "https://habr.com" + parsedLinks[i]
 	}
 
