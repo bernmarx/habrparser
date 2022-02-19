@@ -90,8 +90,6 @@ func ScrapeArticle(pageURL string) page.Page {
 	parsedPage.CommentCount = findCommentCount(doc)
 	parsedPage.Rating = findRating(doc)
 	parsedPage.Article = findArticleText(doc)
-	log.Printf("%v\n%v\n%v\n%v\n%v\n", parsedPage.Author, parsedPage.Title,
-		parsedPage.Posted, parsedPage.CommentCount, parsedPage.Rating)
 
 	return parsedPage
 }
@@ -99,7 +97,7 @@ func ScrapeArticle(pageURL string) page.Page {
 func findAuthor(doc *goquery.Document) string {
 	selection := doc.Find(".tm-article-snippet__author")
 	if selection == nil {
-		log.Print("no author found")
+		log.Fatalln("no author found")
 	}
 
 	return strings.TrimSpace(selection.Text())
