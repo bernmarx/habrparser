@@ -5,11 +5,13 @@ services:
   db:
     image: postgres
     restart: always
-    env_file:
-      - ./db/.env
+    environment:
+      - POSTGRES_USER=username
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=habr_pages
     volumes:
       - ./db/database/:/var/lib/postgresql/data/
-      - ./db/scripts/${DB_SCRIPT_INIT}:/docker-entrypoint-initdb.d/{DB_SCRIPT_INIT}
+      - ./db/scripts/${DB_SCRIPT_INIT}:/docker-entrypoint-initdb.d/${DB_SCRIPT_INIT}
       - ./db/scripts/${DB_JSON_SCRIPT_INIT}:/docker-entrypoint-initdb.d/${DB_JSON_SCRIPT_INIT}
     ports:
       - 5431:5432
