@@ -1,4 +1,4 @@
-module github.com/bernmarx/habrparser
+module github.com/bernmarx/habrparser/app
 
 go 1.16
 

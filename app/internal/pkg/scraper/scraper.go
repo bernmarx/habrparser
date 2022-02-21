@@ -7,7 +7,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/bernmarx/habrparser/internal/pkg/page"
+	"github.com/bernmarx/habrparser/app/internal/pkg/page"
 
 	"github.com/PuerkitoBio/goquery"
 )
