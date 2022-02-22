@@ -1,11 +1,12 @@
 package main
 
 import (
-	"database/sql"
-	"github.com/bernmarx/habrparser/app/internal/pkg/page"
-	"github.com/bernmarx/habrparser/app/internal/pkg/scraper"
 	"log"
 
+	"github.com/bernmarx/habrparser/app/internal/pkg/page"
+	"github.com/bernmarx/habrparser/app/internal/pkg/scraper"
+
+	"database/sql"
 	_ "github.com/lib/pq"
 )
 

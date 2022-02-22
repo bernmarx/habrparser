@@ -53,6 +53,7 @@ func ScrapeLinks(url string, maxPages int, class string) []string {
 	return parsedLinks
 }
 
+// ScrapeArticle извлекает данные из статьи с хабра
 func ScrapeArticle(pageURL string) page.Page {
 	parsedPage := page.Page{}
 	res, err := http.Get(pageURL)
