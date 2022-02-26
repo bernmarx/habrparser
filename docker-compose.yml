@@ -11,15 +11,17 @@ services:
       - POSTGRES_DB=habr_pages
     volumes:
       - ./db/database/:/var/lib/postgresql/data/
-      - ./db/scripts/${DB_SCRIPT_INIT}:/docker-entrypoint-initdb.d/${DB_SCRIPT_INIT}
-      - ./db/scripts/${DB_JSON_SCRIPT_INIT}:/docker-entrypoint-initdb.d/${DB_JSON_SCRIPT_INIT}
+      - ./db/scripts/init-habr-db.sql:/docker-entrypoint-initdb.d/init-habr-db.sql
+      - ./db/scripts/init-habr-db-json.sql:/docker-entrypoint-initdb.d/init-habr-db-json.sql
     ports:
       - 5431:5432
 
   parser:
+    env_file:
+      - .env
     build:
-      context: ./app/
-      dockerfile: ./cmd/habrparser/Dockerfile
+      context: ./
+      dockerfile: ./build/Dockerfile
     restart: on-failure
     depends_on:
       - db
