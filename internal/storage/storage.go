@@ -1,3 +1,4 @@
+//go:generate mockgen -source $GOFILE -destination ./storage_mock.go -package $GOPACKAGE
 package storage
 
 import (
@@ -5,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/bernmarx/habrparser/app/internal/page"
+	"github.com/bernmarx/habrparser/internal/page"
 )
 
 type storage interface {

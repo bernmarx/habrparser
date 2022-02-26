@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/bernmarx/habrparser/app/internal/scraper"
+	"github.com/bernmarx/habrparser/internal/scraper"
 )
 
 type ProxyClient struct {

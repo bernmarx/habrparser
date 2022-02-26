@@ -3,9 +3,9 @@ package main
 import (
 	"log"
 
-	"github.com/bernmarx/habrparser/app/internal/page"
-	"github.com/bernmarx/habrparser/app/internal/scraper"
-	"github.com/bernmarx/habrparser/app/internal/storage"
+	"github.com/bernmarx/habrparser/internal/page"
+	"github.com/bernmarx/habrparser/internal/scraper"
+	"github.com/bernmarx/habrparser/internal/storage"
 
 	_ "github.com/lib/pq"
 )

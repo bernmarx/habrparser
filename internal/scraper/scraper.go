@@ -1,3 +1,4 @@
+//go:generate mockgen -source $GOFILE -destination ./scraper_mock.go -package $GOPACKAGE
 package scraper
 
 import (
@@ -8,14 +9,14 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/bernmarx/habrparser/app/internal/page"
+	"github.com/bernmarx/habrparser/internal/page"
 
 	"github.com/PuerkitoBio/goquery"
 )
 
 const (
 	baseOfNum        = 10
-	linkClass        = "tm-article-snippet__title-link"
+	linkClass        = ".tm-article-snippet__title-link"
 	authorClass      = ".tm-article-snippet__author"
 	titleClass       = ".tm-article-snippet__title_h1"
 	timeTag          = "time"
@@ -60,7 +61,7 @@ func (s *Scraper) ScrapeLinks(url string, maxPages int) ([]string, error) {
 		return nil, err
 	}
 
-	doc.Find("." + linkClass).Each(func(i int, s *goquery.Selection) {
+	doc.Find(linkClass).Each(func(i int, s *goquery.Selection) {
 		if i >= maxPages {
 			return
 		}
@@ -103,7 +104,7 @@ func (s *Scraper) ScrapeArticle(pageURL string) (page.Page, error) {
 
 	id, err := strconv.ParseInt(pageURL[len(pageURL)-7:len(pageURL)-1], baseOfNum, 0)
 	if err != nil {
-		log.Fatalf("failed to parse id from %v", pageURL)
+		log.Println("failed to parse id from ", pageURL)
 	}
 
 	parsedPage.ID = int(id)
