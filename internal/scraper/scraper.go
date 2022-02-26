@@ -36,7 +36,7 @@ func NewScraper() *Scraper {
 	return &Scraper{HttpClient: http.DefaultClient}
 }
 
-func (s *Scraper) SetClient(client *http.Client) {
+func (s *Scraper) SetClient(client HttpClient) {
 	s.HttpClient = client
 }
 
