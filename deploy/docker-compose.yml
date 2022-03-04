@@ -10,9 +10,9 @@ services:
       - POSTGRES_PASSWORD=password
       - POSTGRES_DB=habr_pages
     volumes:
-      - ./db/database/:/var/lib/postgresql/data/
-      - ./db/scripts/init-habr-db.sql:/docker-entrypoint-initdb.d/init-habr-db.sql
-      - ./db/scripts/init-habr-db-json.sql:/docker-entrypoint-initdb.d/init-habr-db-json.sql
+      - ./../db/database/:/var/lib/postgresql/data/
+      - ./../db/scripts/init-habr-db.sql:/docker-entrypoint-initdb.d/init-habr-db.sql
+      - ./../db/scripts/init-habr-db-json.sql:/docker-entrypoint-initdb.d/init-habr-db-json.sql
     ports:
       - 5431:5432
 
@@ -20,7 +20,7 @@ services:
     env_file:
       - .env
     build:
-      context: ./
+      context: ./../
       dockerfile: ./build/Dockerfile
     restart: on-failure
     depends_on:

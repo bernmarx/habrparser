@@ -5,9 +5,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
-
-	"github.com/bernmarx/habrparser/internal/page"
 )
+
+func TestSetClient(t *testing.T) {
+	s := Scraper{}
+	c := http.DefaultClient
+	s.SetClient(c)
+	if s.HttpClient != c {
+		t.Error("httpClient should be same", c, s.HttpClient)
+	}
+}
 
 func TestScrapeLinks(t *testing.T) {
 	ts := httptest.NewServer(http.HandlerFunc(
@@ -31,6 +38,25 @@ func TestScrapeLinks(t *testing.T) {
 
 	if str[0] != "test" {
 		t.Error("found article link does not match expected \"test\"\n", str[0])
+	}
+
+	ts = httptest.NewServer(http.HandlerFunc(
+		func(rw http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(rw,
+				`<html>
+				<body>
+					<a href="test" class="tm-article-snippet__title-link"></a>
+				</body>
+				</html>`)
+		},
+	))
+	defer ts.Close()
+
+	s = NewScraper()
+
+	str, _ = s.ScrapeLinks(ts.URL, 0)
+	if len(str) > 0 {
+		t.Error("len(str) is supposed to be 0\n", str)
 	}
 
 	ts = httptest.NewServer(http.HandlerFunc(
@@ -105,7 +131,7 @@ func TestScrapeArticle(t *testing.T) {
 	defer ts.Close()
 
 	s := NewScraper()
-	expected := page.Page{
+	expected := Page{
 		Author:       "author",
 		Title:        "title",
 		Posted:       "time",
@@ -133,5 +159,114 @@ func TestScrapeArticle(t *testing.T) {
 	_, err = s.ScrapeArticle(ts.URL)
 	if err == nil {
 		t.Error("should get error since test server's content is garbage")
+	}
+
+	ts = httptest.NewServer(http.HandlerFunc(
+		func(rw http.ResponseWriter, r *http.Request) {
+			rw.WriteHeader(http.StatusBadGateway)
+			fmt.Fprintf(rw,
+				`garbage`)
+		},
+	))
+	defer ts.Close()
+
+	_, err = s.ScrapeArticle(ts.URL)
+	if err == nil {
+		t.Error("should get error status code is not OK")
+	}
+
+	_, err = s.ScrapeArticle("123")
+	if err == nil {
+		t.Error("should get error url is invalid")
+	}
+
+	ts = httptest.NewServer(http.HandlerFunc(
+		func(rw http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(rw,
+				`<html>
+				<body>
+					<h1 class="tm-article-snippet__title_h1">title</h1>
+					<time datetime="time"></time>
+					<p class="tm-article-page-comments">1</p>
+					<p class="tm-votes-meter__value_appearance-article">2</p>
+					<p class="article-formatted-body">text</p>
+				</body>
+				</html>
+				`)
+		},
+	))
+	defer ts.Close()
+
+	_, err = s.ScrapeArticle(ts.URL)
+	if err == nil {
+		t.Error("should get error author is missing")
+	}
+
+	ts = httptest.NewServer(http.HandlerFunc(
+		func(rw http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(rw,
+				`<html>
+				<body>
+					<p class="tm-article-snippet__author">author</p>
+					<h1 class="tm-article-snippet__title_h1">title</h1>
+					<p class="tm-article-page-comments">1</p>
+					<p class="tm-votes-meter__value_appearance-article">2</p>
+					<p class="article-formatted-body">text</p>
+				</body>
+				</html>
+				`)
+		},
+	))
+	defer ts.Close()
+
+	_, err = s.ScrapeArticle(ts.URL)
+	if err == nil {
+		t.Error("should get error posted is missing")
+	}
+
+	ts = httptest.NewServer(http.HandlerFunc(
+		func(rw http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(rw,
+				`<html>
+				<body>
+					<p class="tm-article-snippet__author">author</p>
+					<h1 class="tm-article-snippet__title_h1">title</h1>
+					<time datetime="time"></time>
+					<p class="tm-article-page-comments">asd</p>
+					<p class="tm-votes-meter__value_appearance-article">2</p>
+					<p class="article-formatted-body">text</p>
+				</body>
+				</html>
+				`)
+		},
+	))
+	defer ts.Close()
+
+	p, _ := s.ScrapeArticle(ts.URL)
+	if p.CommentCount != 0 {
+		fmt.Println("comment count: ", p.CommentCount)
+		t.Error("comment count should be 0")
+	}
+
+	ts = httptest.NewServer(http.HandlerFunc(
+		func(rw http.ResponseWriter, r *http.Request) {
+			fmt.Fprintf(rw,
+				`<html>
+				<body>
+					<p class="tm-article-snippet__author">author</p>
+					<h1 class="tm-article-snippet__title_h1">title</h1>
+					<time datetime="time"></time>
+					<p class="tm-article-page-comments">1</p>
+					<p class="article-formatted-body">text</p>
+				</body>
+				</html>
+				`)
+		},
+	))
+	defer ts.Close()
+
+	_, err = s.ScrapeArticle(ts.URL)
+	if err == nil {
+		t.Error("should get error rating is missing")
 	}
 }

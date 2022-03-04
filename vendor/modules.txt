@@ -3,6 +3,12 @@
 github.com/PuerkitoBio/goquery
 # github.com/andybalholm/cascadia v1.3.1
 github.com/andybalholm/cascadia
+# github.com/getsentry/sentry-go v0.12.0
+## explicit
+github.com/getsentry/sentry-go
+github.com/getsentry/sentry-go/internal/crypto/randutil
+github.com/getsentry/sentry-go/internal/debug
+github.com/getsentry/sentry-go/internal/ratelimit
 # github.com/golang/mock v1.6.0
 ## explicit
 github.com/golang/mock/gomock
@@ -15,3 +21,5 @@ github.com/lib/pq/scram
 ## explicit
 golang.org/x/net/html
 golang.org/x/net/html/atom
+# golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+golang.org/x/sys/execabs

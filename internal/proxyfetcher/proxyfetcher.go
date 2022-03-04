@@ -22,6 +22,8 @@ func NewProxyListFromFile(filePathAbs string) (ProxyList, error) {
 
 	pls := string(plb)
 
+	pls = strings.Trim(pls, "\n")
+
 	ps := strings.Split(pls, ";")
 	for _, p := range ps {
 		u, err := url.Parse("http://" + p)

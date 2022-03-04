@@ -22,3 +22,5 @@
 
 # Remove GoLand stuff from git
 .idea
+
+database

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/bernmarx/habrparser/internal/page"
+	"github.com/getsentry/sentry-go"
 
 	"github.com/PuerkitoBio/goquery"
 )
@@ -53,7 +53,8 @@ func (s *Scraper) ScrapeLinks(url string, maxPages int) ([]string, error) {
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		return nil, errors.New("ScrapeLinks error: Status code is not OK")
+		err := errors.New("ScrapeLinks error: Status code is not OK")
+		return nil, err
 	}
 
 	doc, err := goquery.NewDocumentFromReader(res.Body)
@@ -70,6 +71,7 @@ func (s *Scraper) ScrapeLinks(url string, maxPages int) ([]string, error) {
 		if !exists {
 			log.Println("article link was selected but no link found")
 			err = errors.New("article link was selected but no link found")
+			sentry.CaptureException(err)
 		}
 
 		parsedLinks = append(parsedLinks, link)
@@ -79,18 +81,19 @@ func (s *Scraper) ScrapeLinks(url string, maxPages int) ([]string, error) {
 }
 
 // ScrapeArticle извлекает данные из статьи с хабра
-func (s *Scraper) ScrapeArticle(pageURL string) (page.Page, error) {
-	parsedPage := page.Page{}
+func (s *Scraper) ScrapeArticle(pageURL string) (Page, error) {
+	parsedPage := Page{}
 	res, err := s.Get(pageURL)
 
 	if err != nil {
-		log.Fatal(err)
+		return parsedPage, err
 	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode != http.StatusOK {
-		log.Printf("\nstatus code error: %d %s while connecting to %v", res.StatusCode, res.Status, pageURL)
+		err := errors.New("status code is not ok")
+		return parsedPage, err
 	}
 
 	if res.StatusCode == http.StatusOK {
@@ -121,10 +124,7 @@ func (s *Scraper) ScrapeArticle(pageURL string) (page.Page, error) {
 		return parsedPage, err
 	}
 
-	parsedPage.CommentCount, err = findCommentCount(doc)
-	if err != nil {
-		return parsedPage, err
-	}
+	parsedPage.CommentCount = findCommentCount(doc)
 
 	parsedPage.Rating, err = findRating(doc)
 	if err != nil {
@@ -138,7 +138,7 @@ func (s *Scraper) ScrapeArticle(pageURL string) (page.Page, error) {
 
 func findAuthor(doc *goquery.Document) (string, error) {
 	selection := doc.Find(authorClass)
-	if selection == nil {
+	if selection.Text() == "" {
 		return "", errors.New("could not find author")
 	}
 
@@ -161,14 +161,12 @@ func findPosted(doc *goquery.Document) (string, error) {
 	return "", errors.New("could not find posted")
 }
 
-func findCommentCount(doc *goquery.Document) (int, error) {
+func findCommentCount(doc *goquery.Document) int {
 	selection := doc.Find(commentClass)
 
-	n, err := getNumber(selection.Text())
-	if err != nil {
-		return 0, err
-	}
-	return n, nil
+	n := getNumber(selection.Text())
+
+	return n
 }
 
 func findRating(doc *goquery.Document) (int, error) {
@@ -176,9 +174,6 @@ func findRating(doc *goquery.Document) (int, error) {
 
 	rating, err := strconv.ParseInt(selection.Text(), baseOfNum, 0)
 	if err != nil {
-		if selection.Text() == "" {
-			return 0, nil
-		}
 		return 0, errors.New("failed to parse rating from article")
 	}
 
@@ -190,7 +185,7 @@ func findArticleText(doc *goquery.Document) string {
 	return selection.Text()
 }
 
-func getNumber(str string) (int, error) {
+func getNumber(str string) int {
 	num := ""
 
 	for len(str) > 0 {
@@ -204,11 +199,8 @@ func getNumber(str string) (int, error) {
 
 	ans, err := strconv.ParseInt(num, baseOfNum, 0)
 	if err != nil {
-		if num == "" {
-			return 0, nil
-		}
-		return 0, errors.New("failed to parse number")
+		return 0
 	}
 
-	return int(ans), nil
+	return int(ans)
 }

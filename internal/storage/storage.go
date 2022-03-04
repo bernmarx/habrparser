@@ -6,7 +6,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/bernmarx/habrparser/internal/page"
+	"github.com/bernmarx/habrparser/internal/scraper"
+	"github.com/getsentry/sentry-go"
 )
 
 type storage interface {
@@ -25,11 +26,13 @@ func NewStorage() (*Storage, error) {
 
 	db, err := sql.Open("postgres", connData)
 	if err != nil {
+		sentry.CaptureException(err)
 		return nil, err
 	}
 
 	err = db.Ping()
 	if err != nil {
+		sentry.CaptureException(err)
 		return nil, err
 	}
 
@@ -38,18 +41,20 @@ func NewStorage() (*Storage, error) {
 	return &s, nil
 }
 
-func (s *Storage) AddPageData(p *page.Page) error {
+func (s *Storage) AddPageData(p *scraper.Page) error {
 	sqlstmt1 := `SELECT addpage($1)`
 	sqlstmt2 := `SELECT addpagejson($1, $2)`
 	pageJSON := p.GetJSON()
 
 	_, err := s.Exec(sqlstmt1, pageJSON)
 	if err != nil {
+		sentry.CaptureException(err)
 		return err
 	}
 
 	_, err = s.Exec(sqlstmt2, p.ID, pageJSON)
 	if err != nil {
+		sentry.CaptureException(err)
 		return err
 	}
 
